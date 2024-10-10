@@ -19,6 +19,6 @@ def distancia_punto_a_plano(A, B, C, D, punto):
     denominador = np.sqrt(A**2 + B**2 + C**2)
     
     # Distancia
-    distancia = numerador / denominador
+    distancia = numerador / max(denominador, 1e-15)
     
     return distancia

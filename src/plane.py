@@ -2,8 +2,9 @@ import numpy as np
 from .utils import distancia_punto_a_plano
 
 class Plane:
-    def __init__(self, p1, p2, p3):
+    def __init__(self, p1, p2, p3, i1, i2, i3):
         self.inliers = [p1, p2, p3]
+        self.cloud_indexes = [i1, i2, i3]
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
@@ -28,8 +29,15 @@ class Plane:
     def add_inlier(self, p):
         self.inliers.append(p)
 
+    def add_cloud_indexes(self, i):
+        self.cloud_indexes.append(i)
+
     def is_plane(self, min_inliers_amount):
         return len(self.inliers) >= min_inliers_amount
 
     def points(self):
         return np.array(self.inliers)
+    
+    def make_copy(self):
+        for i in range(len(self.inliers)):
+            self.inliers[i] = np.copy(self.inliers[i])

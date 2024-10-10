@@ -1,6 +1,7 @@
 import numpy as np
 import polyscope as ps
-import openmesh
+import openmesh as om
+import trimesh
 import argparse
 from src.plane_detection import find_planes
 
@@ -126,6 +127,33 @@ from src.plane_detection import find_planes
 
 # ps.show()
 
+
+def load_xyz_file(file_path):
+    # Leer el archivo XYZ y convertirlo a np.array
+    points = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            coords = list(map(float, line.strip().split()))
+            points.append(coords)
+    return np.array(points)
+
+def load_ply_file(file_path):
+    # Usar trimesh para leer archivos PLY
+    mesh = trimesh.load(file_path)
+    return np.array(mesh.vertices)
+
+def load_mesh(file_path):
+    # Determinar el tipo de archivo y cargarlo
+    if file_path.endswith('.xyz'):
+        return load_xyz_file(file_path)
+    elif file_path.endswith('.ply'):
+        return load_ply_file(file_path)
+    else:
+        # Intentar cargar con OpenMesh si es compatible
+        mesh = om.read_trimesh(file_path)
+        points = mesh.points()
+        return np.array(points)
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--file", type=str, default="", help="Nombre del archivo")
 parser.add_argument("--p", type=float, default="", help="Threshold de distancia")
@@ -137,12 +165,13 @@ file = opt.file
 p = opt.p
 mpoints = opt.mpoints
 T = opt.T
-mesh = openmesh.read_trimesh(file)
 
-planes = find_planes(mesh.points(), p, mpoints, T)
+mesh_points = load_mesh(file)
+
+planes = find_planes(mesh_points, p, mpoints, T)
 
 ps.init()
-ps.register_point_cloud("Original", mesh.points())
+ps.register_point_cloud("Original", mesh_points)
 i = 1
 for plane in planes:
     ps_mesh = ps.register_point_cloud(f"Plane {i}", plane.points())
